@@ -35,8 +35,8 @@ public class UserService {
         return new UserDTO(user.get().getName(), user.get().getEmail(), user.get().getBio());
     }
 
-    public void createUser(UserDTO userDTO) throws RuntimeException {
-        if (userDTO == null) {
+    public void createUser(UserDTO userDTO) throws RuntimeException{
+        if (userDTO.getName().isEmpty() || userDTO.getEmail().isEmpty() || userDTO.getBio().isEmpty()) {
             throw new RuntimeException("Nome, e-mail e bio necessários.");
         }
 
