@@ -1,12 +1,22 @@
 package dev.eduardo.apirestful.dto;
 
-public class UserDTO {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
+public class UserDto {
+
+    @NotBlank
+    @Size(max = 50)
     private String name;
+    @NotBlank
+    @Email
+    @Size(max = 320)
     private String email;
+    @NotBlank
     private String bio;
 
-    public UserDTO(String name, String email, String bio) {
+    public UserDto(String name, String email, String bio) {
         this.name = name;
         this.email = email;
         this.bio = bio;

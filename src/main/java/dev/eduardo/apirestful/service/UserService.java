@@ -1,8 +1,9 @@
 package dev.eduardo.apirestful.service;
 
-import dev.eduardo.apirestful.dto.UserDTO;
+import dev.eduardo.apirestful.dto.UserDto;
 import dev.eduardo.apirestful.model.User;
 import dev.eduardo.apirestful.repository.UserRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,33 +16,32 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<UserDTO> findAllUsers() {
+    public List<UserDto> findAllUsers() {
         return userRepository
                 .findAll()
                 .stream()
-                .map(user -> new UserDTO(user.getName(), user.getEmail(), user.getBio()))
+                .map(user -> new UserDto(user.getName(), user.getEmail(), user.getBio()))
                 .toList();
     }
 
-    public UserDTO findUserById(Integer id) throws RuntimeException {
+    public UserDto findUserById(Integer id) throws RuntimeException {
         Optional<User> user = userRepository.findById(id);
 
         if (user.isEmpty()) {
             throw new RuntimeException("Usuário não encontrado.");
         }
 
-        return new UserDTO(user.get().getName(), user.get().getEmail(), user.get().getBio());
+        return new UserDto(user.get().getName(), user.get().getEmail(), user.get().getBio());
     }
 
-    public void createUser(UserDTO userDTO) throws RuntimeException{
-        if (userDTO.getName().isEmpty() || userDTO.getEmail().isEmpty() || userDTO.getBio().isEmpty()) {
+    public void createUser(UserDto userDto) throws RuntimeException{
+        if (userDto.getName().isEmpty() || userDto.getEmail().isEmpty() || userDto.getBio().isEmpty()) {
             throw new RuntimeException("Nome, e-mail e bio necessários.");
         }
 
         User user = new User();
-        user.setName(userDTO.getName());
-        user.setEmail(userDTO.getEmail());
-        user.setBio(userDTO.getBio());
+        BeanUtils.copyProperties(userDto, user);
+        user.setPhone("Null");
 
         userRepository.save(user);
     }
@@ -56,7 +56,7 @@ public class UserService {
         userRepository.delete(user.get());
     }
 
-    public UserDTO updateUserById(Integer id, UserDTO userDTO) throws RuntimeException {
+    public UserDto updateUserById(Integer id, UserDto userDto) throws RuntimeException {
         Optional<User> oldUser = userRepository.findById(id);
 
         if (oldUser.isEmpty()) {
@@ -64,12 +64,9 @@ public class UserService {
         }
 
         User updatedUser = oldUser.get();
-        updatedUser.setName(userDTO.getName());
-        updatedUser.setEmail(userDTO.getEmail());
-        updatedUser.setBio(userDTO.getBio());
-
+        BeanUtils.copyProperties(userDto, updatedUser);
         userRepository.save(updatedUser);
 
-        return new UserDTO(updatedUser.getName(), updatedUser.getEmail(), updatedUser.getBio());
+        return userDto;
     }
 }

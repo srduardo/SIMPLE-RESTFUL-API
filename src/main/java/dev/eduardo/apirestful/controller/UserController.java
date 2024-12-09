@@ -1,7 +1,8 @@
 package dev.eduardo.apirestful.controller;
 
-import dev.eduardo.apirestful.dto.UserDTO;
+import dev.eduardo.apirestful.dto.UserDto;
 import dev.eduardo.apirestful.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,41 +18,41 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> usersDTO = userService.findAllUsers();
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<UserDto> usersDTO = userService.findAllUsers();
         return ResponseEntity.ok(usersDTO);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
-        UserDTO userDTO;
+    public ResponseEntity<UserDto> getUserById(@PathVariable Integer id) {
+        UserDto userDto;
 
         try {
-            userDTO = userService.findUserById(id);
+            userDto = userService.findUserById(id);
         } catch (Exception e) {
             return ResponseEntity.status(404).build();
         }
 
-        return ResponseEntity.ok(userDTO);
+        return ResponseEntity.ok(userDto);
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> postUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDto> postUser(@Valid @RequestBody UserDto userDto) {
         try {
-            userService.createUser(userDTO);
+            userService.createUser(userDto);
         } catch (Exception e) {
             return ResponseEntity.status(406).build();
         }
 
-        return ResponseEntity.status(201).body(userDTO);
+        return ResponseEntity.status(201).body(userDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> putUser(@PathVariable Integer id, @RequestBody UserDTO userDTO) {
-        UserDTO updatedUserDto;
+    public ResponseEntity<UserDto> putUser(@PathVariable Integer id, @Valid @RequestBody UserDto userDto) {
+        UserDto updatedUserDto;
 
         try {
-            updatedUserDto = userService.updateUserById(id, userDTO);
+            updatedUserDto = userService.updateUserById(id, userDto);
         } catch (Exception e) {
             return ResponseEntity.status(404).build();
         }
@@ -60,7 +61,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteUserById(@PathVariable Integer id) {
+    public ResponseEntity<Object> deleteUserById(@PathVariable Integer id) {
         try {
             userService.deleteUserById(id);
         } catch (Exception e) {
