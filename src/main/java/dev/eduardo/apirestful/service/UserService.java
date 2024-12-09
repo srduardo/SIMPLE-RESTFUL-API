@@ -3,9 +3,7 @@ package dev.eduardo.apirestful.service;
 import dev.eduardo.apirestful.dto.UserDTO;
 import dev.eduardo.apirestful.model.User;
 import dev.eduardo.apirestful.repository.UserRepository;
-import org.antlr.v4.runtime.InputMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
