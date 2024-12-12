@@ -41,7 +41,7 @@ public class UserService {
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
-        user.setPhone("Null");
+        user.setPassword("Null");
 
         userRepository.save(user);
     }
