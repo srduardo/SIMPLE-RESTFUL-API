@@ -14,35 +14,47 @@ public class UserDto {
     @Size(max = 320)
     private String email;
     @NotBlank
+    @Size(max = 100)
+    private String password;
+    @NotBlank
     private String bio;
 
-    public UserDto(String name, String email, String bio) {
+    public UserDto(String name, String email, String password, String bio) {
         this.name = name;
         this.email = email;
+        this.password = password;
         this.bio = bio;
     }
 
-    public String getName() {
+    public @NotBlank @Size(max = 50) String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotBlank @Size(max = 50) String name) {
         this.name = name;
     }
 
-    public String getEmail() {
+    public @NotBlank @Email @Size(max = 320) String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@NotBlank @Email @Size(max = 320) String email) {
         this.email = email;
     }
 
-    public String getBio() {
+    public @NotBlank @Size(max = 100) String getPassword() {
+        return password;
+    }
+
+    public void setPassword(@NotBlank @Size(max = 100) String password) {
+        this.password = password;
+    }
+
+    public @NotBlank String getBio() {
         return bio;
     }
 
-    public void setBio(String bio) {
+    public void setBio(@NotBlank String bio) {
         this.bio = bio;
     }
 }

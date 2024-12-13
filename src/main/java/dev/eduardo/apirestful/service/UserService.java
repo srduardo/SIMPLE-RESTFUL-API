@@ -20,7 +20,7 @@ public class UserService {
         return userRepository
                 .findAll()
                 .stream()
-                .map(user -> new UserDto(user.getName(), user.getEmail(), user.getBio()))
+                .map(user -> new UserDto(user.getName(), user.getEmail(), user.getPassword(), user.getBio()))
                 .toList();
     }
 
@@ -31,18 +31,16 @@ public class UserService {
             throw new RuntimeException("Usuário não encontrado.");
         }
 
-        return new UserDto(user.get().getName(), user.get().getEmail(), user.get().getBio());
+        return new UserDto(user.get().getName(), user.get().getEmail(), user.get().getPassword(), user.get().getBio());
     }
 
     public void createUser(UserDto userDto) throws RuntimeException{
-        if (userDto.getName().isEmpty() || userDto.getEmail().isEmpty() || userDto.getBio().isEmpty()) {
+        if (userDto.getName().isEmpty() || userDto.getEmail().isEmpty() || userDto.getPassword().isEmpty() || userDto.getBio().isEmpty()) {
             throw new RuntimeException("Nome, e-mail e bio necessários.");
         }
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
-        user.setPassword("Null");
-
         userRepository.save(user);
     }
 
