@@ -5,6 +5,7 @@ import dev.eduardo.apirestful.model.User;
 import dev.eduardo.apirestful.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    private BCryptPasswordEncoder encoderPassword = new BCryptPasswordEncoder(12);
 
     public List<UserDto> findAllUsers() {
         return userRepository
@@ -41,6 +44,7 @@ public class UserService {
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
+        user.setPassword(encoderPassword.encode(user.getPassword()));
         userRepository.save(user);
     }
 
