@@ -17,7 +17,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    private BCryptPasswordEncoder encoderPassword = new BCryptPasswordEncoder(12);
+    private BCryptPasswordEncoder encoderPassword = new BCryptPasswordEncoder(12); // Instancia o encriptador
 
     public List<UserDto> findAllUsers() {
         return userRepository
@@ -44,7 +44,7 @@ public class UserService {
 
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
-        user.setPassword(encoderPassword.encode(user.getPassword()));
+        user.setPassword(encoderPassword.encode(user.getPassword())); // Define a senha encriptada no usuário
         userRepository.save(user);
     }
 
@@ -67,6 +67,7 @@ public class UserService {
 
         User updatedUser = oldUser.get();
         BeanUtils.copyProperties(userDto, updatedUser);
+        updatedUser.setPassword(encoderPassword.encode(updatedUser.getPassword()));
         userRepository.save(updatedUser);
 
         return userDto;
