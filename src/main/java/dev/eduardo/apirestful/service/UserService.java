@@ -3,8 +3,13 @@ package dev.eduardo.apirestful.service;
 import dev.eduardo.apirestful.dto.UserDto;
 import dev.eduardo.apirestful.model.User;
 import dev.eduardo.apirestful.repository.UserRepository;
+import dev.eduardo.apirestful.service.security.JwtService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +21,12 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
 
     private BCryptPasswordEncoder encoderPassword = new BCryptPasswordEncoder(12); // Instancia o encriptador
 
@@ -71,5 +82,15 @@ public class UserService {
         userRepository.save(updatedUser);
 
         return userDto;
+    }
+
+    public String verify(UserDto userDto) throws BadCredentialsException {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword()));
+
+        if (authentication.isAuthenticated()) {
+            return jwtService.generateToken(userDto.getEmail());
+        }
+
+        return "Fail...";
     }
 }

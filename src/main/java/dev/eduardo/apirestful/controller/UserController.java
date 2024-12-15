@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,18 +20,13 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/csrf-token")
-    public CsrfToken getCsrfToken(HttpServletRequest httpServletRequest) {
-        return (CsrfToken) httpServletRequest.getAttribute("_csrf");
-    }
-
-    @GetMapping
+    @GetMapping("/listUsers")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> usersDTO = userService.findAllUsers();
         return ResponseEntity.ok(usersDTO);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getUser/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Integer id) {
         UserDto userDto;
 
@@ -43,8 +39,8 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-    @PostMapping
-    public ResponseEntity<UserDto> postUser(@Valid @RequestBody UserDto userDto) {
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> registerUser(@Valid @RequestBody UserDto userDto) {
         try {
             userService.createUser(userDto);
         } catch (Exception e) {
@@ -54,7 +50,12 @@ public class UserController {
         return ResponseEntity.status(201).body(userDto);
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/login")
+    public String loginUser(@Valid @RequestBody UserDto userDto) {
+        return userService.verify(userDto);
+    }
+
+    @PutMapping("/update/{id}")
     public ResponseEntity<UserDto> putUser(@PathVariable Integer id, @Valid @RequestBody UserDto userDto) {
         UserDto updatedUserDto;
 
@@ -67,7 +68,7 @@ public class UserController {
         return ResponseEntity.ok(updatedUserDto);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteUserById(@PathVariable Integer id) {
         try {
             userService.deleteUserById(id);

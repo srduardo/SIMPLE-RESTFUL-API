@@ -57,4 +57,14 @@ public class UserDto {
     public void setBio(@NotBlank String bio) {
         this.bio = bio;
     }
+
+    @Override
+    public String toString() {
+        return "UserDto{" +
+                "name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", bio='" + bio + '\'' +
+                '}';
+    }
 }

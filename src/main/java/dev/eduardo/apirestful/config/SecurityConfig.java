@@ -3,15 +3,18 @@ package dev.eduardo.apirestful.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
 
 @Configuration
 @EnableWebSecurity
@@ -31,8 +34,11 @@ public class SecurityConfig {
 
         return http
                 .csrf(customizer -> customizer.disable()) // Desativando a segurança contra csrf (não recomendado para sistemas em produção e sem proteções adicionais)
-                .authorizeHttpRequests(requests -> requests.anyRequest().authenticated()) // Explicitando que todas as requisições precisam ser autenticadas
-                .httpBasic(Customizer.withDefaults()) // Explicitando que as requisições http devem ter seu fluxo normal
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("api/users/register", "api/users/login")
+                        .permitAll()
+                        .anyRequest().authenticated()) // Explicitando que todas as requisições precisam ser autenticadas
+                .httpBasic(Customizer.withDefaults()) // Ativa a autenticação HTTP Basic com um prompt de comando no navegador
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Mudando o tipo de sessão para sem estado (não mantém dados do usuário, todas as requisições são independentes)
                 .build(); // Construindo o objeto
@@ -44,6 +50,11 @@ public class SecurityConfig {
         provider.setPasswordEncoder(new BCryptPasswordEncoder(12)); // Selecionando o tipo de encriptador de senha (BCryptPasswordEncoder)
         provider.setUserDetailsService(userDetailsService); // Selecionando a service que gerenciará as credenciais dos usuários
         return provider; // Retornando o provedor personalizado
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception { // Devemos especificar às configurações de segurança que queremos ter controle sobre o AuthenticationManager, e fazemos isso criando um Bean para retorná-lo sob nosso controle.
+        return configuration.getAuthenticationManager();
     }
 
 }
