@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -26,6 +27,9 @@ public class SecurityConfig {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtFilter jwtFilter;
 
     // Se você não especificar nenhum filtro aqui, ele por padrão não retornará nenhum.
     @Bean
@@ -41,7 +45,8 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults()) // Ativa a autenticação HTTP Basic com um prompt de comando no navegador
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Mudando o tipo de sessão para sem estado (não mantém dados do usuário, todas as requisições são independentes)
-                .build(); // Construindo o objeto
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();// Construindo o objeto
     }
 
     @Bean
