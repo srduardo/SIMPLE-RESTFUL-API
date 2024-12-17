@@ -30,27 +30,27 @@ possa te ajudar a extrair um pouco de conhecimento também. E desde já, obrigad
 
 ## Sumário do que será dito no README:
 
-1. Arquitetura MVN;<br>
+1. **Arquitetura MVN;**<br>
 1.1. Controllers;<br>
 1.2. Services;<br>
 1.3. Model;<br>
 1.4. Repositories.<br>
-2. Validação de dados;<br>
+2. **Validação de dados;**<br>
    2.1. Validate;<br>
    2.2 DTO's;<br>
-3. Versionamento de banco de dados;<br>
+3. **Versionamento de banco de dados;**<br>
    3.1 Flyway;<br>
    3.2 Migrations;<br>
-4. Configuração de segurança;<br>
+4. **Configuração de segurança;**<br>
    4.1 Spring Security;<br>
    4.2 Vulnerabilidades de API's;<br>
    4.3 SecurityFilterChain do Spring Security;<br>
-5. Autenticação de usuários;<br>
+5. **Autenticação de usuários;**<br>
    5.1 UserDetails e UserDetailsService;<br>
    5.2 Classe UsernamePasswordAuthenticationToken;<br>
    5.3 Provedores de autenticação do Spring Security;<br>
    5.4 Gerenciador de autenticação do Spring Security;<br>
-6. Geração e validação de tokens (JWT);
+6. **Geração e validação de tokens (JWT);**<br>
    6.1 JwtService gerenciar os tokens (JWT);<br>
    6.2 Geração de tokens (JWT);<br>
    6.3 Validação de tokens (JWT) com JwtFilter.<br>
