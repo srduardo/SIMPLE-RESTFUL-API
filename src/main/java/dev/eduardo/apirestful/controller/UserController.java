@@ -2,12 +2,9 @@ package dev.eduardo.apirestful.controller;
 
 import dev.eduardo.apirestful.dto.UserDto;
 import dev.eduardo.apirestful.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

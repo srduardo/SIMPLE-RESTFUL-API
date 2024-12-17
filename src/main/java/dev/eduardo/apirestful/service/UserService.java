@@ -49,8 +49,8 @@ public class UserService {
     }
 
     public void createUser(UserDto userDto) throws RuntimeException{
-        if (userDto.getName().isEmpty() || userDto.getEmail().isEmpty() || userDto.getPassword().isEmpty() || userDto.getBio().isEmpty()) {
-            throw new RuntimeException("Nome, e-mail e bio necessários.");
+        if (userDto == null) {
+            throw new RuntimeException("Sem dados o suficiente.");
         }
 
         User user = new User();
