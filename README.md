@@ -27,7 +27,7 @@ possa te ajudar a extrair um pouco de conhecimento também. E desde já, obrigad
 - IntelliJ como IDE;
 - Postman para testes de requisição.
 
-## Sumário do que será dito no README:
+## O que será explicado:
 
 1. **Arquitetura em Camadas;**<br>
    1.1. Controllers;<br>
