@@ -121,3 +121,63 @@ não precisemos gastarmos tempo criando sistemas de validação manualmente, tor
 
 ![DTO's](images/Validation.png)
 
+## 3. Versionamento de banco de dados:
+
+O versionamento de banco de dados é uma prática comum no 
+desenvolvimento back-end, que busca guardar o histórico de
+mudanças na estrutura do banco de dados ao longo do tempo, 
+o que permite uma melhor gestão e manutenibilidade para com
+o projeto. Este histórico assume forma em arquivos de extensão
+".sql" ou ".java", e são separados por versões únicas 
+(representadas como: V1, V2, V3...) que servem para 
+identificar cada mudança feita no banco de dados em ordem 
+cronológica, como a criação de uma nova tabela ou a alteração 
+de algum dado, por exemplo. Os benefícios desta prática são 
+diversos, contando com mais segurança no projeto, devido a 
+permanencia das informações sobre a estrutura do banco de 
+dados, a integridade da estrutura, facilidade de manutenção, 
+organização eficaz e maior praticidade.
+
+
+### 3.1. Migrations:
+
+As migrations são basicamente os scripts que registram as
+alterações feitas no banco de dados, sendo separados por
+versões únicas (V1, V2, V3...) que sinalizam a ordem em que
+essas alterações foram realizadas. Além disso, a nomeclatura
+das migrations possui um padrão próprio, sendo ele da 
+seguinte forma: 
+
+- "V1__nome_da_migration.sql";
+- "V1__nome-da-migration.sql".
+
+Com isso, o objetivo das migrations é de adicionar ao 
+schema do banco de dados as alterações feitas em ordem,
+mantendo assim a integridade da estrutura e separando-a
+adequadamente de forma organizada. E sim, cada migration 
+representa apenas uma alteração do banco de dados, e não 
+um processo de estruturação completo. Exemplo:
+
+- V1__create_table_user.sql;
+- V2__add_columns_user.sql;
+- V3__alter_column_user.sql;
+- V4__insert_new_user.sql.
+
+### 3.2. Flyway:
+
+O Flyway é uma ferramenta extremamente útil que simplifica
+o processo de manter um banco de dados atualizado com as
+migrations que foram criadas durante o desenvolvimento. Por
+conta disso, o Flyway cria uma tabela chamada 
+``flyway_schema_history`` no banco de dados, que armazena as
+alterações feitas com as migrations, seguindo obrigatoriamente 
+a ordem de suas versões. Esse registro é feito com o objetivo 
+de evitar a necessidade de executar uma migration mais de uma
+vez, pois uma vez que sua alteração foi registrada no schema,
+ela não precisa ser executada novamente, fazendo com que o
+schema analise apenas com as novas mudanças em 
+migrations futuras, ou em migrations que ainda não foram 
+aplicadas pelo Flyway. A vantagem desta funcionalidade é a 
+maior consistência que é atribuida ao banco de dados.
+
+![Flyway e migrations](images/MigrationsEFlyway.png)
