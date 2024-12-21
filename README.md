@@ -181,3 +181,69 @@ aplicadas pelo Flyway. A vantagem desta funcionalidade é a
 maior consistência que é atribuida ao banco de dados.
 
 ![Flyway e migrations](images/MigrationsEFlyway.png)
+
+## 4. Configuração de segurança:
+
+A configuração de segurança é essencial para estabelecer os
+todas as regras e personalizações de segurança necessárias
+para proteger o usuário e o sistema, sendo um recurso fornecido
+pelo Spring Security. Essa configuração é desenvolvida em uma
+classe Java, com auxílio do Spring Boot para a integração com
+outras ferramentas e recursos, e existem diversos tipos de
+configurações que podem ou devem ser feitas. As que foram feitas
+neste projeto são:
+
+- Desativação da segurança contra CSRF;
+- Personalização do ``SecurityFilterChain`` para tratar as 
+requisições de acordo com a segurança do sistema;
+- Instanciação e personalização de um provedor de autenticação;
+- Instanciação do gerenciador de autenticação, para que o 
+desenvolvedor tenha acesso ao mesmo.
+
+### 4.1. Spring Security:
+
+O Spring Security é um Framework extremamente útil e importante
+para manter APIs REST seguras. Com ele é possível implementar
+sistemas de autenticação e autorização para os usuários, e proteger
+endpoints específicos através de permissões obrigatórias. Ele pode personalizar
+filtros de segurança do ``SecurityFilterChain`` e gerenciar políticas
+de sessões, como tornar uma sessão stateless ou stateful, por exemplo.
+Além disso, é com o Spring Security que é feito a configuração de segurança 
+citada no tópico anterior.
+
+### 4.2. Vulnerabilidades de APIs:
+
+Existem diversas vulnerabilidades que podem compromenter
+a integridade de um sistema e prejudicar o usuário de diversas
+formas, sendo roubando suas credenciais, usar seus recursos
+para prejudicar a aplicação, ou até mesmo realizar ações
+maliciosas nos sistemas para benefício próprio. Algumas 
+dessas vulnerabilidades e técnicas usadas para prejudicar
+aplicações e usuários são:
+
+- **CSRF (Cross-site Request Forgery):** É um tipo de ataque onde um usuário mal-intencionado
+pode cria um site malicioso com algum botão ou link que possua
+algum script pré-configurado para lançar uma requisição maliciosa
+para outros sites. Tendo este site malicioso, o usuário mal-intencionado pode atrair e
+induzir um usuário que possui uma sessão ativa no site alvo,
+fazendo-o clicar em um dos botões e disparar uma requisição
+para o site alvo. Essa requisição passa pelo sistema de
+segurança do site alvo (pois para o site, quem está acessando é
+o usuário legítimo) e realiza ações mal-intencionadas, como
+uma transferência monetária, por exemplo.
+- **XSS (Cross-site Scripting):** É uma vulnerabilidade onde
+o usuário mal-intencionado pode injetar scripts maliciosos em sites diversos, 
+novamente com o objetivo de roubar informações
+sensíveis, como credenciais ou ID de sessão. Um usuário usuário mal-intencionado pode por
+exemplo adicionar um script à um comentário em um site, e assim
+que algum usuário viualizar aquele comentário, o script é
+executado e acaba por roubar as credencais do usuário.
+Isso permite que o usuário mal-intencionado pessoa acessar sua conta e se passar 
+pelo usuário legítimo, por exemplo.
+- **SQL Injection:** Também um tipo de vulnerabilidade, que 
+consiste em enviar uma consulta SQL em um campo de entrada de dados e
+contornar o sistema de segurança, por falta de validação na
+entrada dos dados. Isso permite que a consulta SQL seja
+interpretada pelo banco de dados, fazendo com que as informações
+sejam expostas no console do navegador. 
+
