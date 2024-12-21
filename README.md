@@ -221,29 +221,116 @@ maliciosas nos sistemas para benefício próprio. Algumas
 dessas vulnerabilidades e técnicas usadas para prejudicar
 aplicações e usuários são:
 
-- **CSRF (Cross-site Request Forgery):** É um tipo de ataque onde um usuário mal-intencionado
-pode cria um site malicioso com algum botão ou link que possua
-algum script pré-configurado para lançar uma requisição maliciosa
-para outros sites. Tendo este site malicioso, o usuário mal-intencionado pode atrair e
-induzir um usuário que possui uma sessão ativa no site alvo,
-fazendo-o clicar em um dos botões e disparar uma requisição
-para o site alvo. Essa requisição passa pelo sistema de
-segurança do site alvo (pois para o site, quem está acessando é
-o usuário legítimo) e realiza ações mal-intencionadas, como
-uma transferência monetária, por exemplo.
-- **XSS (Cross-site Scripting):** É uma vulnerabilidade onde
-o usuário mal-intencionado pode injetar scripts maliciosos em sites diversos, 
-novamente com o objetivo de roubar informações
-sensíveis, como credenciais ou ID de sessão. Um usuário usuário mal-intencionado pode por
-exemplo adicionar um script à um comentário em um site, e assim
-que algum usuário viualizar aquele comentário, o script é
-executado e acaba por roubar as credencais do usuário.
-Isso permite que o usuário mal-intencionado pessoa acessar sua conta e se passar 
-pelo usuário legítimo, por exemplo.
-- **SQL Injection:** Também um tipo de vulnerabilidade, que 
-consiste em enviar uma consulta SQL em um campo de entrada de dados e
-contornar o sistema de segurança, por falta de validação na
-entrada dos dados. Isso permite que a consulta SQL seja
-interpretada pelo banco de dados, fazendo com que as informações
-sejam expostas no console do navegador. 
+**CSRF (Cross-site Request Forgery):**
+
+- **O que é:** Um tipo de ataque que tem o objetivo de induzir
+um usuário com uma sessão ativa em algum site à realizar
+uma requisição sem o seu consentimento.
+- **Método de ataque:** O site malicioso porta diversos métodos
+de sequestrar a requisição do usuário, sendo através de botões,
+links, imagens invisíveis, iframes e muito mais. Portanto, 
+essas formas de interação carregam um script, configurado para
+enviar uma requisição para o site em que o usuário possui uma
+sessão ativa. Por exemplo, o usuário pode ser induzido a 
+clicar em um botão, e ao fazer isso uma requisição é enviada
+para o seu banco e uma transferência é realizada sem o seu
+consentimento.
+- **Como funciona:** A requisição feita pelo usuário carrega
+o seu token de validação, fazendo com que ela passe
+pelo sistema de segurança como se fosse uma mais uma requisição
+normal do usuário legítimo. Dessa forma, o usuário mal-intencionado
+por trás do ataque consegue realizar (indiretamente) ações
+no site, como por exemplo, alterar configurações ou realizar
+uma transferência de dinheiro.
+- **Medida de proteção:** Hoje existe o token CSRF, que é um
+token único gerado pelo servidor e entregue ao usuário. Este
+token foi criado para ser enviado junto das requisições, onde
+ele é validado para garantir que elas (requisições) estão vindo de
+fato do usuário legítimo. Se o token não for válido, a requisição
+é encerrada e o ataque é evitado.
+
+**XSS (Cross-site Scripting):**
+
+- **O que é:** É um tipo de ataque que injeta scripts maliciosos
+(normalmente feito em Javascript) em sites confiáveis, com o objetivo
+de prejudicar os usuários que acessarem esses sites. A diferença entre
+o XSS e o CSRF é que o segundo explora a sessão ativa do usuário, enquanto 
+o primeiro explora a confiança do usuário no site.
+- **Método de ataque:** Normalmente os métodos de ataque dessa
+vulnerabiliade procura explorar as entradas de dados, como
+formulários, URL, comentários, campos de pesquisa e outros. Veja a seguir
+como esses métodos podem ser executados:
+1. **XSS refletido:** Basicamente reflete as alterações do ataque para o usuário assim que a injeção 
+é feita, normalmente pelos parâmetros da URL ou por formulários.
+2. **XSS armazenado:** Quando o script malicioso é armazenado direto
+no banco de dados, sendo executado assim que um usuário acessa
+o recurso correspondente ao script.
+3. **XSS por DOM:** São scripts maliciosos que afetam diretamente
+as propriedades DOM (Document Object Model) do navegador, para que
+códigos maliciosos sejam injetados sem irem diretamente para o
+servidor.
+- **Como funciona:** Normalmente os scripts são desenvolvidos
+em Javascript, já que é uma linguagem totalmente compatível
+com o navegador, que é um dos principais focos do ataque. E com isso,
+como consequência, o script pode executar diversas ações quando
+executados, como redirecionar o usuário para outra página 
+maliciosa, alterar suas configurações, roubar cookies de sessão, 
+ou até mesmo instalar malwares.
+- **Medida de proteção:** Inicialmente é essencial a 
+implementação de validação e condificação das entradas de dados,
+já que os métodos de ataque sempre focam principalmente esse
+meio para ser eficaz. Outras medidas necessárias são a adição
+de algum framework de segurança com proteção contra ataques
+XSS nos sites, e a implementação de políticas de segurança
+eficientes, como treinamento de desenvolvedores, testes de
+software frequentes e atualizações relevantes.
+
+**SQL Injection:**
+
+- **O que é:** É um tipo de ataque que assim como o XSS, também
+se aproveita da vulnerabilidade de entradas de dados, injetando
+consultas SQL e induzindo o sistema a fazer com que o banco de dados
+execute essas consultas. Fazendo isso, o atacante pode coletar
+dados sensíveis ou manipular os dados presentes no banco.
+- **Método de ataque:** Imagine um cenário onde um usuário
+insere uma string da condição `` ' ' OR 'a' = 'a'``, em um formulário 
+de login, mais especificamente no campo de senha. 
+Caso o sistema não tenha a devida proteção contra esse tipo 
+de ataque, essa string será concatenada com a consulta SQL
+padrão do sistema:
+
+> ``SELECT * FROM users WHERE username = 'eduardo' AND password = ' ' OR 'a' = 'a';``
+
+- Esta condição sempre será verdadeira, portanto seria como se o sistema
+estivesse pedindo para o banco de dados retornar todos os usuários da tabela:
+
+> ``SELECT * FROM users;``
+
+- **Como funciona:** Esse tipo de ataque permite que o atacante
+tenha acesso a diversos dados sensíveis, tenha capacidade de
+alterar ou remover os dados, acessar a conta de outros usuários e
+muito mais. No entanto, hoje talvez seja difícil encontrar algum
+sistema sem esse tipo de defesa, mas ainda é válido listarmos
+algumas formas de proteção contra esse tipo de ataque.
+- **Medida de proteção:** Existem três principais medidas de
+proteção, sendo elas:
+1. **Consultas parametrizadas:** Esse tipo de consulta exige
+que o sistema primeiro defina a consulta SQL, para que depois
+seja passado os parâmetros de consulta. Isso faz com que caso 
+seja enviado uma condição para alterar a consulta, essa condição
+não será concatenada com a consulta, e sim tratada como um dado
+para ser passado como parâmetro.
+2. **Procedimentos armazenados:** Esse método faz com que
+a consulta seja definida em um procedimento armazenado, que é
+literalmente persistido no banco de dados. Com isso, o sistema
+pode chamar esse procedimento para efetuar a consulta, impedindo
+que a consulta possa ser alterada. No entanto, se a consulta implementada no procedimento for dinâmica, a
+vulnerabilidade pode persistir.
+3. **Validação de entradas:** Por último, novamente a validação
+de entrada de dados se mostra extremamente importante, pois com
+ela é possível identificar logo no inicio se um dado não 
+corresponde com os padrões definidos do sistema. Normalmente
+essas validações são feitas com padrões regex, mas existem
+diversas formas de implementar essa medida.
+
 
