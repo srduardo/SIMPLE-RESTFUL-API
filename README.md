@@ -430,3 +430,119 @@ session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))``:
 Mas, lembre-se sempre que a segurança das APIs não se baseia apenas em filtros, mas também
 em outras medidas de segurança, como validação de dados, sistema de tokens,
 e muitas outras.
+
+## 5. Autenticação de usuários:
+
+A autenticação de usuários é um processo que busca garantir que
+o usuário tentando acessar determinado recurso seja, de fato, o
+dono das credenciais cadastradas no sistema. No entanto, para a
+realização deste processo são necessários a conclusão de várias
+etapas essenciais para o sucesso do procedimento. Vamos começar
+explicando sobre o UserDetails e o UserDetailsService, que são
+responsáveis por gerenciar as credenciais do usuário para a
+autenticação. Posteriormente será abordado o UsernamePasswordAuthenticationToken,
+que é nada mais do que um token de autenticação que é fornecido
+ao provedor de autenticação, para que o processo seja realizado
+com sucesso. Por sinal, logo em seguida será explicado sobre os
+provedores de autenticação, que são responsáveis por validar
+as credenciais do usuário e até de descriptografar a senha para a
+validação. Por último, falaremos sobre o gerenciador de autenticação,
+que em suma é responsável por selecionar o provedor de autenticação 
+mais adequado para o processo.
+
+### 5.1. UserDetails e UserDetailsService:
+
+**O que são:**
+
+O UserDetails é uma interface que ao ser implementada em uma classe, 
+a torna uma representação das credenciais do usuário e o seu estado
+atual. Nesta classe poderemos saber se as credenciais do usuário ainda
+estão ativas e disponíveis, se não expirarão ou se  estão bloqueadas, 
+além disso também é responsável por carregar todas as permissões que aquele usuário possui.
+Essa classe pode ser instanciada com as credenciais do usuário através
+do UserDetailsService.
+
+O UserDetailsService também é uma interface que deve ser
+implementada em uma classe, fazendo co m que a mesma sobreescreva
+um método chamado ``loadUserByUsername()``. Este método recebe
+uma String (nome de usuário), requisita o usuário ao banco de 
+dados através do seu username, valida seus dado para saber se 
+não é nulo e, por fim, o método retorna uma nova instância de
+um UserDetails daquele usuário. A autenticação normalmente é feita
+com um UserDetails, e não com uma classe User convencional, isso
+ocorre por conta da compatibilidade com todo o sistema de segurança.
+
+**UserDetails:**
+
+    public class MainUserDetails implements UserDetails {
+
+       private User user;
+   
+       public MainUserDetails(User user) {
+           this.user = user;
+       }
+   
+       @Override
+       public Collection<? extends GrantedAuthority> getAuthorities() {
+           return Collections.singleton(new SimpleGrantedAuthority("USER"));
+       }
+   
+       @Override
+       public String getPassword() {
+           return user.getPassword();
+       }
+   
+       @Override
+       public String getUsername() {
+           return user.getEmail();
+       }
+   
+       @Override
+       public boolean isAccountNonExpired() {
+           return true;
+       }
+   
+       @Override
+       public boolean isAccountNonLocked() {
+           return true;
+       }
+   
+       @Override
+       public boolean isCredentialsNonExpired() {
+           return true;
+       }
+   
+       @Override
+       public boolean isEnabled() {
+           return true;
+       }
+    }
+
+**UserDetailsService:**
+
+    @Service
+    public class MainUserDetailsService implements UserDetailsService {
+
+       @Autowired
+       private UserRepository userRepository;
+   
+       @Override
+       public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+   
+           User user = userRepository.findByEmail(email);
+   
+           if (user == null) {
+               System.out.println("Usuário não encontrado");
+               throw new UsernameNotFoundException("Usuário não encontrado");
+           }
+   
+           return new MainUserDetails(user);
+       }
+
+    }
+
+> No caso deste projeto, ao invés da autenticação ser feita
+> com username, eu optei por usar o email como uma das credenciais
+> de autenticação, o que também é possível.
+
+
