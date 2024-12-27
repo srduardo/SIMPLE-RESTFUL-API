@@ -333,4 +333,100 @@ corresponde com os padrões definidos do sistema. Normalmente
 essas validações são feitas com padrões regex, mas existem
 diversas formas de implementar essa medida.
 
+### 4.3. SecurityFilterChain do Spring Security:
 
+**O que é:**
+
+No SecurityFilterChain é onde nós como desenvolvedores podemos
+definir regras de segurança em diversos filtros, que serão utilizados 
+para validar as requisições enviadas pelo usuário. Desta forma,
+o sistema terá um centro de controle para a proteção dos endpoints da aplicação,
+liberando acesso apenas para as requisições autenticadas e autorizadas a ter
+acesso aquele recurso.
+
+**Filtros padrões:**
+
+Existem diversos tipos de filtros padrões que o
+Spring Security fornece para facilitar o desenvolvimento, como
+o ``UsernamePasswordAuthenticationFilter``, por exemplo, que é
+responsável por gerir autenticações através de formulários, onde
+o usuário insere suas credenciais, sendo normalmente o nome de
+usuário e a senha. E outro filtro padrão que
+pode ser citado é o ``BasicAuthenticationFilter``, responsável
+por realizar a autenticação de requisições que carreguem
+as credenciais do usuário, normalmente em seus cabeçalhos. Esses filtros
+são usados e chamados por padrão pelo Spring Security.
+
+**Filtros personalizados:**
+
+O Spring Security também nos permite criar
+filtros personalizados para que possamos ter mais controle e
+flexibilidade, e este tipo de filtro personalizado foi aplicado
+neste projeto para que fosse possível definir algumas regras
+de segurança para as requisições. 
+
+**Filtro personalizado do projeto:**
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        return http
+                .csrf(customizer -> customizer.disable()) 
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("api/users/register", "api/users/login")
+                        .permitAll()
+                        .anyRequest().authenticated()) 
+                .httpBasic(Customizer.withDefaults()) 
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) 
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
+
+> ``HttpSecurity``: É basicamente o contrutor que receberá todas
+> as configurações de segurança para as requisições. Ele será
+> o objeto retornado instanciado pelo Bean quando este filtro
+> for chamado, e todas as regras que foram definidas 
+> serão usadas para validar a requisição.
+
+> ``.csrf(customizer -> customizer.disable())``: Aqui está sendo 
+> desativado a protenção contra ataques CSRF, isso porque APIs
+> Restful normalmente não mantém sessões. Cada requisição de uma
+> API Restful é enviada de forma independente, carregando um token de validação
+> em seu cabeçalho para a realização da autenticação.
+
+> ``.authorizeHttpRequests()``: Aqui é onde são declaradas 
+> algumas regras de autorização para as requisições.
+> ``requests -> requests``: Valirável de referência que representa
+> a requisição lançada pelo usuário.
+> ``.requestMatchers("api/users/register", "api/users/login")``:
+> Aponta para endpoints especificos, para que eles sejam colocados
+> nos parâmetros de uma nova regra de autorização.
+> ``.permitAll()``: Declara que todas as requisições devem ter
+> acesso concedido nos endpoints específiciados pelo item anterior.
+> ``.anyRequest().authenticated())``: Declara que qualquer outra
+> requisição deverá ser autenticada para poder acessar qualquer
+> outro endpoint.
+
+> ``.httpBasic(Customizer.withDefaults()) ``: Declara que em cada
+> requisição não autenticada deve ser requisitado as credenciais do usuário em um
+> prompt de comando no navegador.
+
+> ``.sessionManagement(session ->
+session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))``:
+> Declara que a política de sessão dessa aplicação é de uma sessão
+> sem estado. Ou seja, o servidor não vai guardar qualquer dado do
+> usuário, e todas as requisições serão independentes, cada uma
+> carregando as credenciais do usuário ou tokens de autenticação
+> em seus cabeçalhos.
+
+> ``.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)``:
+> Declara que o filtro jwtFilter deve ser executado antes do UsernamePasswordAuthenticationFilter.
+
+> ``.build();``: Por último, este é responsável por contruir o objeto do Bean
+> para que ele seja instanciado assim que for chamado.
+
+
+Mas, lembre-se sempre que a segurança das APIs não se baseia apenas em filtros, mas também
+em outras medidas de segurança, como validação de dados, sistema de tokens,
+e muitas outras.
