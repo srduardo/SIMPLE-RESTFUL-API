@@ -383,48 +383,48 @@ de segurança para as requisições.
                 .build();
     }
 
-> ``HttpSecurity``: É basicamente o contrutor que receberá todas
-> as configurações de segurança para as requisições. Ele será
-> o objeto retornado instanciado pelo Bean quando este filtro
-> for chamado, e todas as regras que foram definidas 
-> serão usadas para validar a requisição.
+ ``HttpSecurity``: É basicamente o contrutor que receberá todas
+ as configurações de segurança para as requisições. Ele será
+ o objeto retornado instanciado pelo Bean quando este filtro
+ for chamado, e todas as regras que foram definidas 
+ serão usadas para validar a requisição.
 
-> ``.csrf(customizer -> customizer.disable())``: Aqui está sendo 
-> desativado a protenção contra ataques CSRF, isso porque APIs
-> Restful normalmente não mantém sessões. Cada requisição de uma
-> API Restful é enviada de forma independente, carregando um token de validação
-> em seu cabeçalho para a realização da autenticação.
+ ``.csrf(customizer -> customizer.disable())``: Aqui está sendo 
+ desativado a protenção contra ataques CSRF, isso porque APIs
+ Restful normalmente não mantém sessões. Cada requisição de uma
+ API Restful é enviada de forma independente, carregando um token de validação
+ em seu cabeçalho para a realização da autenticação.
 
-> ``.authorizeHttpRequests()``: Aqui é onde são declaradas 
-> algumas regras de autorização para as requisições.
-> ``requests -> requests``: Valirável de referência que representa
-> a requisição lançada pelo usuário.
-> ``.requestMatchers("api/users/register", "api/users/login")``:
-> Aponta para endpoints especificos, para que eles sejam colocados
-> nos parâmetros de uma nova regra de autorização.
-> ``.permitAll()``: Declara que todas as requisições devem ter
-> acesso concedido nos endpoints específiciados pelo item anterior.
-> ``.anyRequest().authenticated())``: Declara que qualquer outra
-> requisição deverá ser autenticada para poder acessar qualquer
-> outro endpoint.
+ ``.authorizeHttpRequests()``: Aqui é onde são declaradas 
+ algumas regras de autorização para as requisições.
+ ``requests -> requests``: Valirável de referência que representa
+ a requisição lançada pelo usuário.
+ ``.requestMatchers("api/users/register", "api/users/login")``:
+ Aponta para endpoints especificos, para que eles sejam colocados
+ nos parâmetros de uma nova regra de autorização.
+ ``.permitAll()``: Declara que todas as requisições devem ter
+ acesso concedido nos endpoints específiciados pelo item anterior.
+ ``.anyRequest().authenticated())``: Declara que qualquer outra
+ requisição deverá ser autenticada para poder acessar qualquer
+ outro endpoint.
 
-> ``.httpBasic(Customizer.withDefaults()) ``: Declara que em cada
-> requisição não autenticada deve ser requisitado as credenciais do usuário em um
-> prompt de comando no navegador.
+ ``.httpBasic(Customizer.withDefaults()) ``: Declara que em cada
+ requisição não autenticada deve ser requisitado as credenciais do usuário em um
+ prompt de comando no navegador.
 
-> ``.sessionManagement(session ->
+ ``.sessionManagement(session ->
 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))``:
-> Declara que a política de sessão dessa aplicação é de uma sessão
-> sem estado. Ou seja, o servidor não vai guardar qualquer dado do
-> usuário, e todas as requisições serão independentes, cada uma
-> carregando as credenciais do usuário ou tokens de autenticação
-> em seus cabeçalhos.
+ Declara que a política de sessão dessa aplicação é de uma sessão
+ sem estado. Ou seja, o servidor não vai guardar qualquer dado do
+ usuário, e todas as requisições serão independentes, cada uma
+ carregando as credenciais do usuário ou tokens de autenticação
+ em seus cabeçalhos.
 
-> ``.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)``:
-> Declara que o filtro jwtFilter deve ser executado antes do UsernamePasswordAuthenticationFilter.
+ ``.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)``:
+ Declara que o filtro jwtFilter deve ser executado antes do UsernamePasswordAuthenticationFilter.
 
-> ``.build();``: Por último, este é responsável por contruir o objeto do Bean
-> para que ele seja instanciado assim que for chamado.
+ ``.build();``: Por último, este é responsável por contruir o objeto do Bean
+ para que ele seja instanciado assim que for chamado.
 
 
 Mas, lembre-se sempre que a segurança das APIs não se baseia apenas em filtros, mas também
