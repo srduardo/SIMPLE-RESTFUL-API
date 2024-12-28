@@ -436,11 +436,11 @@ e muitas outras.
 A autenticação de usuários é um processo que busca garantir que
 o usuário tentando acessar determinado recurso seja, de fato, o
 dono das credenciais cadastradas no sistema. No entanto, para a
-realização deste processo são necessários a conclusão de várias
+realização deste processo é necessário a conclusão de várias
 etapas essenciais para o sucesso do procedimento. Vamos começar
-explicando sobre o UserDetails e o UserDetailsService, que são
+explicando sobre o ``UserDetails`` e o ``UserDetailsService``, que são
 responsáveis por gerenciar as credenciais do usuário para a
-autenticação. Posteriormente será abordado o UsernamePasswordAuthenticationToken,
+autenticação. Posteriormente será abordado o ``UsernamePasswordAuthenticationToken``,
 que é nada mais do que um token de autenticação que é fornecido
 ao provedor de autenticação, para que o processo seja realizado
 com sucesso. Por sinal, logo em seguida será explicado sobre os
@@ -450,27 +450,26 @@ validação. Por último, falaremos sobre o gerenciador de autenticação,
 que em suma é responsável por selecionar o provedor de autenticação 
 mais adequado para o processo.
 
-### 5.1. UserDetails e UserDetailsService:
+### 5.1. UserDetails e UserDetailsService: 
 
-**O que são:**
+O **UserDetails** é uma interface que ao ser implementada em uma classe, 
+a torna uma representação das credenciais do usuário e de outros detalhes
+relevantes, como por exemplo:
 
-O UserDetails é uma interface que ao ser implementada em uma classe, 
-a torna uma representação das credenciais do usuário e o seu estado
-atual. Nesta classe poderemos saber se as credenciais do usuário ainda
-estão ativas e disponíveis, se não expirarão ou se  estão bloqueadas, 
-além disso também é responsável por carregar todas as permissões que aquele usuário possui.
-Essa classe pode ser instanciada com as credenciais do usuário através
-do UserDetailsService.
+- Se a conta do usuário está ou não expirada;
+- Se a conta do usuário está ou não bloqueada;
+- Se as credenciais do usuário estão ou não bloqueadas;
+- Se o UserDetails está ou não ativo;
+- Quais as permissões que o usuário possui.
 
-O UserDetailsService também é uma interface que deve ser
-implementada em uma classe, fazendo co m que a mesma sobreescreva
-um método chamado ``loadUserByUsername()``. Este método recebe
-uma String (nome de usuário), requisita o usuário ao banco de 
-dados através do seu username, valida seus dado para saber se 
-não é nulo e, por fim, o método retorna uma nova instância de
-um UserDetails daquele usuário. A autenticação normalmente é feita
-com um UserDetails, e não com uma classe User convencional, isso
-ocorre por conta da compatibilidade com todo o sistema de segurança.
+Já o **UserDetailsService** é basicamente outra interface que ao ser
+implementada em uma classe, faz com que ela sobreescreva um método
+chamado ``loadUserByUsername()``. Este método é responsável por:
+
+- **Requisitar os dados** do usuário ao banco de dados (através de ser username ou email);
+- **Validar os dados** coletados para saber se o usuário existe no banco de dados;
+- **Instanciar** o UserDetails do usuário;
+- **Retornar** o UserDetails.
 
 **UserDetails:**
 
@@ -541,8 +540,98 @@ ocorre por conta da compatibilidade com todo o sistema de segurança.
 
     }
 
+**Exemplo:**
+
+![UserDetails e UserDetailsService](images/UserDetailsFlow.png)
+
 > No caso deste projeto, ao invés da autenticação ser feita
 > com username, eu optei por usar o email como uma das credenciais
 > de autenticação, o que também é possível.
 
+### 5.2. UsernamePasswordAuthenticationToken:
+
+O ``UsernamePasswordAuthenticationToken`` é uma classe utilizada
+para "envelopar" as credenciais relevantes do usuário durante o 
+processo de autenticação:
+
+- O ``UsernamePasswordAuthenticationToken`` recebe as credenciais
+do usuário (username e senha), normalmente de um ``UserDetails``;
+- O ``UsernamePasswordAuthenticationToken`` retorna um token não
+autenticado para o ``AuthenticationManager``;
+- O ``AuthenticationManager`` seleciona o melhor provedor para
+autenticar aquele objeto;
+- Se o processo de autenticação for bem-sucedido, é retornado um 
+token autenticado e as permissões armazenadas no ``UserDetails``
+são adicionadas neste token.
+
+Os principais pontos a serem destacados são:
+
+- Enquanto o ``UserDetails`` se responsabiliza por representar
+as credenciais do usuário e seus detalhes relevantes, o 
+``UsernamePasswordAuthenticationToken`` é responsável por 
+"envelopar" apenas as credenciais necessárias para o processo
+de autenticação.
+- O ``UsernamePasswordAuthenticationToken`` pode retornar
+tanto tokens "autenticados" quanto "não autenticados".
+- Os tokens "autenticados" são aqueles que passaram de forma
+bem-sucedida no processo de autenticação. Já os "não autenticados"
+são aqueles que ainda não passaram pelo processo de autenticação.
+- Por fim, o token autenticado é adicionado ao 
+``SecurityContextHolder ``, que é responsável por gerenciar todo
+o contexto de segurança da aplicação. 
+
+![UsernamePasswordAuthenticationToken](images/UsernamePasswordAuthenticationToken.png)
+
+> Outro ponto extremamente importante para se destacar, é que
+> durante o processo de autenticação, o provedor requisita o 
+> ``UserDetails`` do usuário para comparar e validar suas 
+> credenciais com as credenciais presentes no token do 
+> ``UsernamePasswordAuthenticationToken`` e atribuir as suas 
+> devidas permissões.
+
+### 5.3. Provedores de autenticação do Spring Security:
+
+Os provedores de autenticação (``AuthenticationProvider``) são
+responsável pelo processo de autenticação de usuário, caso haja
+alguma tentativa de login. Cada provedor segue um tipo específico
+de lógica, portanto existem alguns tipos de provedores:
+
+- ``DaoAuthenticationProvider``: O tipo mais comum de provedor
+de autenticação, que usa o UserDetails como representação
+das credenciais do usuário, coletadas do banco de dados ou
+qualquer outra fonte de armazenamento.
+- ``LdapAuthenticationProvider``: Um provedor que delega a 
+autenticação a um servidor LDAP, usando o ``LdapAuthenticator`` para
+realizar o processo de autenticação. Além disso ele também utiliza
+o ``LdapAuthoritiesPopulator`` para coletar as permissões do usuário.
+
+Esses são os provedores mais comuns e usados na área de desenvolvimento
+back-end, já outros provedores existentes são para casos mais 
+específicos. O provedor utilizado neste projeto é o 
+``DaoAuthenticationProvider``.
+
+### 5.4. Gerenciador de autenticação do Spring Security:
+
+O gerenciador de autenticação (``AuthentiactionManager``) 
+é basicamente um intermediador entre a requisição de login do
+usuário e os provedores de autenticação. Assim que um usuário 
+requisita a autenticação de suas credenciais, o gerenciador:
+
+- Recebe um objeto ``Authentication`` (normalmente um
+``UsernamePasswordAuthenticationToken``);
+- Delega essa autentcação para um provedor adequado;
+- O provedor autentica aquele objeto;
+- Caso a autenticação for bem-sucedida, um objeto 
+``Authentication`` preenchido e autenticado é retornado;
+- Caso a autenticação falhar, é retornado uma 
+``AuthenticationException``.
+
+Pontos importantes a serem destacados:
+
+- Não é o ``AuthenticationManager`` que faz a autenticação
+diretamente, e sim o provedor que ele seleciona;
+- O método utilizado para selecionar o provedor e encaminhar
+a autenticação é o ``.authenticate()``;
+- O token retornado pelo ``UsernamePasswordAuthenticationToken``
+também é um objeto ``Authentication``.
 
