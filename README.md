@@ -635,3 +635,40 @@ a autenticação é o ``.authenticate()``;
 - O token retornado pelo ``UsernamePasswordAuthenticationToken``
 também é um objeto ``Authentication``.
 
+## 6. JSON Web Token (JWT):
+
+Um **JWT (Json Web Token)** é um token de validação que é entregue
+ao usuário após a sua primeira autenticação bem-sucedida. O 
+objetivo deste token é tornar o processo de autenticação mais 
+simples e eficiente, de modo que o token se torne um tipo de 
+passe-livre com uma assinatura de "autenticado" marcada em si, 
+por exemplo, fazendo com que o sistema possa validar a identidade
+do usuário de forma segura sem a necessidade de acessar o banco
+de dados. Com isso, o uso de JWT nas autenticações é útil e 
+eficaz, pois:
+
+- A autenticação não precisa acessar o banco de dados;
+- A autenticação é segura por conta da assinatura criptografada, que mantém a integridade do token;
+- A autenticação não precisa interagir diretamente com as credenciais do usuário para validá-lo.
+
+Mas como é feito esse processo de autenticação? Bom, basicamente, 
+assim que um usuário se autentica no sistema pela primeira vez, 
+o mesmo recebe um token (JWT) que contém:
+
+- Informações e permissões do usuário;
+- Data de criação e expiração do token;
+- Assinatura de segurança criptografada;
+
+Desta forma, sempre que o usuário fizer uma nova requisição, o 
+sistema receberá o seu token (JWT) junto da requisição e assim 
+o sistema saberá que aquele é o usuário verídico, pois o token é
+como se fosse um passe-livre marcado com "autenticado" (key 
+criptografada e única), fazendo com que assim seja liberado o 
+acesso ao recurso. 
+
+![Login Authentication](images/LoginAuthentication.png)
+![Following Authentications](images/FollowingAuthentications.png)
+
+### 6.1.
+
+
