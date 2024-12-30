@@ -45,10 +45,11 @@ possa te ajudar a extrair um pouco de conhecimento também. E desde já, obrigad
    5.2. Classe UsernamePasswordAuthenticationToken;<br>
    5.3. Provedores de autenticação do Spring Security;<br>
    5.4. Gerenciador de autenticação do Spring Security;<br>
-6. **Geração e validação de tokens (JWT);**<br>
-   6.1. JwtService gerenciar os tokens (JWT);<br>
-   6.2. Geração de tokens (JWT);<br>
-   6.3. Validação de tokens (JWT) com JwtFilter.<br>
+6. **JSON Web Token (JWT);**<br>
+   6.1. Partes de um token;<br>
+   6.2. Gerenciamento de tokens com JwtService;<br>
+   6.3. Geração de tokens;<br>
+   6.4. Validação de tokens com JwtFilter.<br>
 
 ## 1. Arquitetura em Camadas:
 
@@ -454,7 +455,7 @@ mais adequado para o processo.
 
 O **UserDetails** é uma interface que ao ser implementada em uma classe, 
 a torna uma representação das credenciais do usuário e de outros detalhes
-relevantes, como por exemplo:
+relevantes, como, por exemplo:
 
 - Se a conta do usuário está ou não expirada;
 - Se a conta do usuário está ou não bloqueada;
@@ -584,7 +585,7 @@ o contexto de segurança da aplicação.
 
 > Outro ponto extremamente importante para se destacar, é que
 > durante o processo de autenticação, o provedor requisita o 
-> ``UserDetails`` do usuário para comparar e validar suas 
+> ``UserDetails`` do usuário para comparar e validar as suas 
 > credenciais com as credenciais presentes no token do 
 > ``UsernamePasswordAuthenticationToken`` e atribuir as suas 
 > devidas permissões.
@@ -592,7 +593,7 @@ o contexto de segurança da aplicação.
 ### 5.3. Provedores de autenticação do Spring Security:
 
 Os provedores de autenticação (``AuthenticationProvider``) são
-responsável pelo processo de autenticação de usuário, caso haja
+responsáveis pelo processo de autenticação de usuário, caso haja
 alguma tentativa de login. Cada provedor segue um tipo específico
 de lógica, portanto existem alguns tipos de provedores:
 
@@ -602,7 +603,7 @@ das credenciais do usuário, coletadas do banco de dados ou
 qualquer outra fonte de armazenamento.
 - ``LdapAuthenticationProvider``: Um provedor que delega a 
 autenticação a um servidor LDAP, usando o ``LdapAuthenticator`` para
-realizar o processo de autenticação. Além disso ele também utiliza
+realizar o processo de autenticação. Além disso, ele também utiliza
 o ``LdapAuthoritiesPopulator`` para coletar as permissões do usuário.
 
 Esses são os provedores mais comuns e usados na área de desenvolvimento
@@ -669,6 +670,63 @@ acesso ao recurso.
 ![Login Authentication](images/LoginAuthentication.png)
 ![Following Authentications](images/FollowingAuthentications.png)
 
-### 6.1.
+### 6.1. Partes de um token:
+
+Antes de entendermos como o token é gerado, precisamos
+aprender sobre as partes que compõem um token. Todas essas partes
+são codificadas em base64url, e elas são:
+
+**Header:**
+
+O cabeçalho ou header é a primeira parte do token, contendo 
+informações que instruem o sistema a como lidar com aquele 
+token. Sendo essas informações:
+
+- Tipo de token (JWT);
+- Algoritmo de assinatura (``HMAC``, ``RSA``, ``ECDSA``).
+
+**Payload:**
+
+O corpo e a segunda parte do token, contendo informações de 
+identificação do usuário e outros detalhes sobre o token. Sendo
+essas informações:
+
+- ID do token
+- Nome do usuário;
+- Tempo de criação e expiração do token;
+- Permissões do usuário.
+
+Essas informações são comumente chamadas de "claims".
+
+**Signature:**
+
+A assinatura e terceira parte do token, contendo a própria 
+assinatura de identificação que é gerada através de um algoritmo
+de assinatura (``HMAC``, no caso deste projeto). Esse algoritmo
+de assinatura usa uma chave secreta que não deve ser revelada
+ou compartilhada de nenhum modo, pois é ela que mantém a 
+integridade do token. Além disso, todas essas três partes são
+concatenadas e separadas por um ponto (.) no token.
+
+### 6.2. Gerenciamento de tokens com JwtService:
+
+Com a introdução desta seção foi possível notar que existem
+diversas etapas que precisam ser realizadas para lidar com
+um token, portanto, existe uma service criada especificamente
+para realizar os principais processos relacionados aos
+tokens, como, por exemplo:
+
+- Geração de token;
+- Assinatura do token;
+- Geração de chave secreta;
+- Extração de informações do token;
+- Validação de assinatura.
+
+O objetivo do ``JwtService`` é o mesmo de qualquer outra service,
+fornecer as regras de negócio dos tokens para o sistema. Normalmente
+quem usa essa service é a ``UserService``, já que os tokens dizem
+respeito ao próprio usuário.
+
+### 6.2. Geração de tokens:
 
 
