@@ -47,9 +47,10 @@ possa te ajudar a extrair um pouco de conhecimento também. E desde já, obrigad
    5.4. Gerenciador de autenticação do Spring Security;<br>
 6. **JSON Web Token (JWT);**<br>
    6.1. Partes de um token;<br>
-   6.2. Gerenciamento de tokens com JwtService;<br>
-   6.3. Geração de tokens;<br>
-   6.4. Validação de tokens com JwtFilter.<br>
+   6.2. Assinatura com chave secreta;<br>
+   6.3. Gerenciamento de tokens com JwtService;<br>
+   6.4. Geração de tokens;<br>
+   6.5. Validação de tokens com JwtFilter.<br>
 
 ## 1. Arquitetura em Camadas:
 
@@ -685,6 +686,15 @@ token. Sendo essas informações:
 - Tipo de token (JWT);
 - Algoritmo de assinatura (``HMAC``, ``RSA``, ``ECDSA``).
 
+Exemplo:
+
+      {
+          "alg": "HS256", //Tipo de algoritmo de assinatura
+          "typ": "JWT"    //Tipo de token
+      }
+
+> eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
 **Payload:**
 
 O corpo e a segunda parte do token, contendo informações de 
@@ -696,7 +706,35 @@ essas informações:
 - Tempo de criação e expiração do token;
 - Permissões do usuário.
 
-Essas informações são comumente chamadas de "claims".
+Essas informações são comumente chamadas de "claims". Existem
+3 tipos de claims, sendo eles:
+
+- **Claims registrados:** claims já pré-estabelecidos, mas não
+obrigatórios.
+1. iat (data de emissão);
+2. exp (data de expiração);
+3. sub (assunto do token);
+4. Dentre outros...
+- **Claims públicos:** São claims reconhecidos publicamente e 
+comumente usados em aplicações.
+1. name;
+2. email;
+3. role (função);
+4. Dentre outros...
+- **Claims privados:** São claims privados e criados apenas 
+para casos específicos de projetos.
+1. departament;
+2. userId.
+
+Exemplo de Payload:
+
+    {
+        "sub": "1234567890", //Assunto
+        "name": "John Doe",  //Nome
+        "iat": 1516239022    //Data de emissão
+    }
+
+> eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ
 
 **Signature:**
 
@@ -707,6 +745,20 @@ de assinatura usa uma chave secreta que não deve ser revelada
 ou compartilhada de nenhum modo, pois é ela que mantém a 
 integridade do token. Além disso, todas essas três partes são
 concatenadas e separadas por um ponto (.) no token.
+
+Exemplo:
+
+    HMACSHA256(                         //Algortimo de assinatura
+        base64UrlEncode(header) + "." + //Header
+        base64UrlEncode(payload),       //Payload
+        secret-key                      //Chave secreta para realizar a assinatura
+    )
+
+> eWeSlpStc9jRBPdKItcSZ12Kcc890ktcrOzJd_zl2-M
+
+**Token completo:**
+
+> eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.eWeSlpStc9jRBPdKItcSZ12Kcc890ktcrOzJd_zl2-M
 
 ### 6.2. Gerenciamento de tokens com JwtService:
 
@@ -727,6 +779,226 @@ fornecer as regras de negócio dos tokens para o sistema. Normalmente
 quem usa essa service é a ``UserService``, já que os tokens dizem
 respeito ao próprio usuário.
 
-### 6.2. Geração de tokens:
+### 6.2. Assinatura com chave secreta:
 
+A assinatura de tokens nada mais é do que um código base64url
+gerado com base em uma chave secreta e um algoritmo de assinatura.
+Esse algortimo basicamente usa a chave secreta para codificá-la
+juntamante com o header e o payload do token. Desta forma é
+possível evitar ataques de falsificação de tokens, pois apenas
+o servidor que tiver a mesma chave secreta poderá validá-los.
 
+    public class JwtService {
+    
+        private SecretKey key = getKey();
+
+        ...
+    }
+
+Inicialmente no projeto nós começamos declarando um atributo do
+tipo ``SecretKey`` (Uma interface que estende de outra 
+interface chamada ``Key``) chamado "key". Esse atributo por fim
+recebe a chave secreta de um método chamado ``getKey()``, que é
+responsável por codificar e retornar a chave.
+
+    private SecretKey getKey() {
+        SecretKey sk;
+
+        try {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
+            sk = keyGenerator.generateKey();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        return sk;
+    }
+
+- ``private SecretKey getKey()``: Declaração do método que
+retornará uma ``SecretKey``;
+- ``SecretKey sk;``: Declaração da variável que representará a 
+chave secreta;
+- ``try-catch``: Implementação de um try-catch para o controle
+de possíveis exceções;
+- ``KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");``:
+Instanciação da classe responsável por gerar a chave secreta,
+com a seleção do algoritmo de assinatura que será
+utilizado, através do método ``.getInstance("HmacSHA256")``;
+- ``sk = keyGenerator.generateKey();``: Atribuindo a chave gerada
+para a variável ``sk`` com o método ``.generateKey()``;
+- ``catch (NoSuchAlgorithmException e)``: catch para caso o
+algoritmo de criptografia da assinatura não esteja disponível;
+- ``throw new RuntimeException(e);``: Lançamento da exceção em
+tempo de execução;
+- ``return sk;``: Retorno da chave secreta;
+
+### 6.3. Geração de tokens:
+
+Para gerar um token nós utilizamos uma classe muito importante
+chamada ``Jwts``, que tem o objetivo de gerar e analisar tokens.
+Mas, vamos por partes, começando pelo fato que a classe Jwts 
+configura o header do token sem que nós precisemos lidar com isso
+manualmente, portanto, vamos focar na definição das claims do 
+payload e na signature. A seguir veremos o código de geração
+de token do projeto:
+
+    public String generateToken(String email) {
+
+        Map<String, Object> claims = new HashMap<>();
+
+        return Jwts.builder()
+                .claims()
+                .add(claims)
+                .subject(email)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))
+                .and()
+                .signWith(key)
+                .compact();
+    }
+
+Isso pode parecer muito confuso no momento, mas vamos explicar 
+linha por linha para que você possa entender.
+
+- ``public String generateToken(String email)``: A definição de 
+um método da classe JwtService, citada anteriormente.
+Este método recebe o email do usuário (poderia ser o
+username também) como uma String, e retorna o token que também
+será uma String;
+- ``Map<String, Object> claims = new HashMap<>();``: A instanciação de 
+um HashMap, com o tipo da sua chave sendo String e o seu
+valor do tipo Object. Esse Map será a representação do conjunto de
+claims/payload do nosso token, fazendo sentido já que o
+payload nada mais é do que um Json que possui "chaves" e "valores" (claims);
+- ``return Jwts.builder()``: O retorno do construtor da classe 
+Jwts, que antecede e dá início à estrutura de métodos sequenciais que 
+configurará o token;
+- ``.claims().add(claims)``: Definição/adição do Map que 
+representará os claims/playload do token;
+- ``.subject(email)``: Definição do assunto do token;
+- ``.issuedAt(new Date(System.currentTimeMillis()))``: Definição
+da data de emissão do token;
+- ``.expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))``:
+Definição do tempo de expiração do token;
+- ``.and()``: Separação lógica do encadeamento de métodos(opcional);
+- ``.signWith(key)``: Define a chave secreta que será usado para
+realizar a assinatura;
+- ``.compact();``: Constrói e retorna o token como uma String.
+
+###  6.4. Validação de tokens com JwtFilter:
+
+Em algumas sessões anteriores foi comentado sobre filtros de
+segurança padrões e personalizados, que o Spring Security nos
+oferece para a configuração de segurança das requisições que
+são enviadas ao servidor. Nesta seção nós falaremos de um filtro
+personalizado, desenvolvido com o propósito de validar os tokens
+que chegam com as requisições do usuário.
+
+    @Component
+    public class JwtFilter extends OncePerRequestFilter {
+    
+        @Autowired
+        private JwtService jwtService;
+    
+        @Autowired
+        ApplicationContext applicationContext;
+    
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    
+            String authHeader = request.getHeader("Authorization");
+    
+            String token = null;
+            String email = null;
+    
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7); 
+                email = jwtService.extractEmail(token);
+            }
+    
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+    
+                UserDetails userDetails = applicationContext.getBean(MainUserDetailsService.class).loadUserByUsername(email);
+    
+                if (jwtService.validateToken(token, userDetails)) {
+    
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
+    
+            filterChain.doFilter(request, response);
+        }
+    }
+
+- ``@Component``: Uma anotação que marca uma classe 
+para ser gerenciada pelo container de injeção de dependência do
+Spring;
+- ``public class JwtFilter extends OncePerRequestFilter``:
+Define a classe que representará o filtro de validação dos
+tokens. Essa classe estende de uma classe abstrata chamada
+``OncePerRequestFilter ``, que faz com que o filtro seja
+usado apenas uma vez para cada requisição;
+- ``@Autowired``: Uma anotação que marca um atributo que será
+alvo de injeção de dependência;
+- ``private JwtService jwtService;``: Definição do ``JwtService``,
+para que o filro possa utiliza das regras de negócio relacionadas
+aos tokens;
+- ``ApplicationContext applicationContext;``: Instanciação do
+``applicationContext`` para podermos lidar com os beans do 
+container do Spring;
+- ``@Override``: Uma anotação que marca um método de outra 
+classe (herdada) sobreescrito na classe atual (herdeira);
+- ``protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException``:
+Definição do principal método que será utilizado pelo filtro
+para realizar as validações. Os parâmetros ``request``, ``response`` e ``filterChain``
+representam a requisição recebida, a resposta para aquela requisição e
+a corrente de filtros do Spring Security, respectivamente;
+- ``String authHeader = request.getHeader("Authorization");``:
+Definição do cabeçalho de autorização (Header Authorization) da
+requisição (request) com o método ``.getHeader()``, selecionando
+como argumento a String "Authorization" para indicar o cabeçalho
+que deve ser coletado;
+- ``String token = null;``: Definição da variável (String) que
+representará o token;
+- ``String email = null;``: Definição da variável (String) que 
+representará o email do usuário;
+- ``if (authHeader != null && authHeader.startsWith("Bearer ")) {``
+Condicional que verifica se o cabeçalho de autorização está ou
+não vazio, e se caso ele existir, se ele começa com "Bearer " 
+(marcador que antecede o token);
+- ``token = authHeader.substring(7);``: Atribuição do token 
+para a variável "token", usando o método ``.substring`` da 
+do Wrapper String;
+- ``email = jwtService.extractEmail(token);``: Atribuição do
+email do usuário usando um método do ``jwtService``;
+- ``if (email != null && SecurityContextHolder.getContext().getAuthentication() == null)``:
+Condicional que verifica se existe algum email de usuário, e se
+o SecurityContextHolder já possui alguma autenticação armazenada;
+- ``UserDetails userDetails = applicationContext.getBean(MainUserDetailsService.class).loadUserByUsername(email);``
+1.  ``UserDetails userDetails``: Definição da variável que 
+representará os detalhes do usuário;
+2. ``applicationContext.getBean(MainUserDetailsService.class)``:
+O ApplicationContext obtém a classe ``MainUserDetailsService``
+com o método ``.getBean()``;
+3. ``.loadUserByUsername(email)``: Um método utilizado para obter os 
+detalhes do usuário (a partir do email) usado pelo ``MainUserDetailsService``;
+- ``if (jwtService.validateToken(token, userDetails))``: Condicional
+que valida o token pelo seus detalhes de usuário, e caso for
+válido, o méotodo retorna "true";
+- ``UsernamePasswordAuthenticationToken authToken =
+  new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());``:
+Um token de autenticação baseado em Username e Password é criado e
+instanciado em uma variável do tipo ``UsernamePasswordAuthenticationToken``;
+- ``authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));``:
+O token de autenticação recebe mais alguns detalhes sobre o token
+JWT, como o IP do cliente, por exemplo;
+- ``SecurityContextHolder.getContext().setAuthentication(authToken);``:
+O token de autenticação é atribuido ao ``SecurityContextHolder``, para
+que o processo todo do último ``if`` (atual) não seja necessário;
+- ``filterChain.doFilter(request, response);``:
+A requisição e resposta é enviada para o próximo filtro
+do ``filterChain``;
