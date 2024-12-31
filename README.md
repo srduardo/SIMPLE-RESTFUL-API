@@ -779,7 +779,7 @@ fornecer as regras de negócio dos tokens para o sistema. Normalmente
 quem usa essa service é a ``UserService``, já que os tokens dizem
 respeito ao próprio usuário.
 
-### 6.2. Assinatura com chave secreta:
+### 6.3. Assinatura com chave secreta:
 
 A assinatura de tokens nada mais é do que um código base64url
 gerado com base em uma chave secreta e um algoritmo de assinatura.
@@ -832,7 +832,7 @@ algoritmo de criptografia da assinatura não esteja disponível;
 tempo de execução;
 - ``return sk;``: Retorno da chave secreta;
 
-### 6.3. Geração de tokens:
+### 6.4. Geração de tokens:
 
 Para gerar um token nós utilizamos uma classe muito importante
 chamada ``Jwts``, que tem o objetivo de gerar e analisar tokens.
@@ -885,7 +885,7 @@ Definição do tempo de expiração do token;
 realizar a assinatura;
 - ``.compact();``: Constrói e retorna o token como uma String.
 
-###  6.4. Validação de tokens com JwtFilter:
+###  6.5. Validação de tokens com JwtFilter:
 
 Em algumas sessões anteriores foi comentado sobre filtros de
 segurança padrões e personalizados, que o Spring Security nos
